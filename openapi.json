@@ -1,0 +1,1493 @@
+{
+    "openapi": "3.0.2",
+    "info": {
+        "title": "FastAPI",
+        "version": "0.1.0"
+    },
+    "paths": {
+        "/": {
+            "get": {
+                "summary": "Read Root",
+                "description": "エンジンの起動状態を取得。",
+                "operationId": "read_root__get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Status"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/speakers": {
+            "get": {
+                "summary": "Speakers",
+                "description": "話者情報の取得。",
+                "operationId": "speakers_v1_speakers_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "title": "Response Speakers V1 Speakers Get",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/SpeakerMeta"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/estimate_prosody": {
+            "post": {
+                "summary": "Estimate Prosody",
+                "description": "テキストから韻律を取得。",
+                "operationId": "estimate_prosody_v1_estimate_prosody_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProsodyMakingParam"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Prosody"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/estimate_f0": {
+            "post": {
+                "summary": "Estimate F0",
+                "description": "wavの周波数情報を取得。",
+                "operationId": "estimate_f0_v1_estimate_f0_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/WavWithDuration"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorldF0"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/predict": {
+            "post": {
+                "summary": "Predict",
+                "description": "テキストから音声を予測。機械学習による推論処理なので時間がかかる。prosodyDetailなしでtextだけでも推論可能。textとprosodyDetailではprosodyDetailが優先される。",
+                "operationId": "predict_v1_predict_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/WavMakingParam"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "audio/wav": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/predict_with_duration": {
+            "post": {
+                "summary": "Predict",
+                "description": "predictと同時にduration情報も得る。",
+                "operationId": "predict_v1_predict_with_duration_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/WavMakingParam"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WavWithDuration"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/process": {
+            "post": {
+                "summary": "Process",
+                "description": "音声を加工。機械学習による推論ではないため処理時間は短い。",
+                "operationId": "process_v1_process_post",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Body_process_v1_process_post"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "audio/wav": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/process_with_pitch": {
+            "post": {
+                "summary": "Process",
+                "description": "pitch調整も含めた音声の加工。",
+                "operationId": "process_v1_process_with_pitch_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/WavProcessingParam"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "audio/wav": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/synthesis": {
+            "post": {
+                "summary": "Synthesis",
+                "description": "predict+processの処理。",
+                "operationId": "synthesis_v1_synthesis_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SynthesisParam"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "audio/wav": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/set_dictionary": {
+            "post": {
+                "summary": "Set Dictionary",
+                "description": "辞書の設定。",
+                "operationId": "set_dictionary_v1_set_dictionary_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DictionaryWords"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/download_infos": {
+            "get": {
+                "summary": "Download Infos",
+                "description": "キャラクターダウンロード情報を取得。",
+                "operationId": "download_infos_v1_download_infos_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "title": "Response Download Infos V1 Download Infos Get",
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/DownloadableModel"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/speaker_folder_path": {
+            "get": {
+                "summary": "Speaker Folder Path",
+                "description": "キャラクターのフォルダパスを取得。",
+                "operationId": "speaker_folder_path_v1_speaker_folder_path_get",
+                "parameters": [
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "Speakeruuid",
+                            "type": "string"
+                        },
+                        "name": "speakerUuid",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SpeakerFolderPath"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/query2prosody": {
+            "post": {
+                "summary": "Speaker Folder Path",
+                "description": "v1のqueryをprosodyに変換。",
+                "operationId": "speaker_folder_path_v1_query2prosody_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AudioQuery"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Prosody"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/style_id_to_speaker_meta": {
+            "post": {
+                "summary": "Speaker Folder Path",
+                "description": "style_idだけでスピーカー情報を取得。重複があった場合は後にロードしたスピーカーが優先される。",
+                "operationId": "speaker_folder_path_v1_style_id_to_speaker_meta_post",
+                "parameters": [
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "Styleid",
+                            "type": "integer"
+                        },
+                        "name": "styleId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SpeakerMetaForTextBox"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/sample_voice": {
+            "get": {
+                "summary": "Get Sample Voice",
+                "description": "話者のサンプルボイスを取得する。",
+                "operationId": "get_sample_voice_v1_sample_voice_get",
+                "parameters": [
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "Speakeruuid",
+                            "type": "string"
+                        },
+                        "name": "speakerUuid",
+                        "in": "query"
+                    },
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "Styleid",
+                            "type": "integer"
+                        },
+                        "name": "styleId",
+                        "in": "query"
+                    },
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "Index",
+                            "type": "integer"
+                        },
+                        "name": "index",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "audio/wav": {
+                                "schema": {
+                                    "type": "string",
+                                    "format": "binary"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/speaker_policy": {
+            "get": {
+                "summary": "Get Speaker Policy",
+                "description": "話者のpolicyファイルを取得する",
+                "operationId": "get_speaker_policy_v1_speaker_policy_get",
+                "parameters": [
+                    {
+                        "required": false,
+                        "schema": {
+                            "title": "Speakeruuid",
+                            "type": "string"
+                        },
+                        "name": "speakerUuid",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SpeakerPolicy"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/engine_info": {
+            "get": {
+                "summary": "Get Engine Info",
+                "description": "エンジンの情報を取得する。",
+                "operationId": "get_engine_info_v1_engine_info_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EngineInfo"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "AccentPhrase": {
+                "title": "AccentPhrase",
+                "required": [
+                    "moras",
+                    "accent",
+                    "isInterrogative"
+                ],
+                "type": "object",
+                "properties": {
+                    "moras": {
+                        "title": "Moras",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/coeirocore__v_util__Mora"
+                        }
+                    },
+                    "accent": {
+                        "title": "Accent",
+                        "type": "integer"
+                    },
+                    "pauseMora": {
+                        "$ref": "#/components/schemas/coeirocore__v_util__Mora"
+                    },
+                    "isInterrogative": {
+                        "title": "Isinterrogative",
+                        "type": "boolean"
+                    }
+                }
+            },
+            "AudioQuery": {
+                "title": "AudioQuery",
+                "required": [
+                    "accentPhrases",
+                    "speedScale",
+                    "pitchScale",
+                    "intonationScale",
+                    "volumeScale",
+                    "prePhonemeLength",
+                    "postPhonemeLength",
+                    "outputSamplingRate",
+                    "outputStereo"
+                ],
+                "type": "object",
+                "properties": {
+                    "accentPhrases": {
+                        "title": "Accentphrases",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/AccentPhrase"
+                        }
+                    },
+                    "speedScale": {
+                        "title": "Speedscale",
+                        "type": "number"
+                    },
+                    "pitchScale": {
+                        "title": "Pitchscale",
+                        "type": "number"
+                    },
+                    "intonationScale": {
+                        "title": "Intonationscale",
+                        "type": "number"
+                    },
+                    "volumeScale": {
+                        "title": "Volumescale",
+                        "type": "number"
+                    },
+                    "prePhonemeLength": {
+                        "title": "Prephonemelength",
+                        "type": "number"
+                    },
+                    "postPhonemeLength": {
+                        "title": "Postphonemelength",
+                        "type": "number"
+                    },
+                    "outputSamplingRate": {
+                        "title": "Outputsamplingrate",
+                        "type": "integer"
+                    },
+                    "outputStereo": {
+                        "title": "Outputstereo",
+                        "type": "boolean"
+                    },
+                    "kana": {
+                        "title": "Kana",
+                        "type": "string"
+                    }
+                }
+            },
+            "Body_process_v1_process_post": {
+                "title": "Body_process_v1_process_post",
+                "required": [
+                    "wav"
+                ],
+                "type": "object",
+                "properties": {
+                    "wav": {
+                        "title": "Wav",
+                        "type": "string",
+                        "format": "binary"
+                    },
+                    "volumeScale": {
+                        "title": "Volumescale",
+                        "type": "number",
+                        "default": 1.0
+                    },
+                    "pitchScale": {
+                        "title": "Pitchscale",
+                        "type": "number",
+                        "default": 0.0
+                    },
+                    "intonationScale": {
+                        "title": "Intonationscale",
+                        "type": "number",
+                        "default": 1.0
+                    },
+                    "prePhonemeLength": {
+                        "title": "Prephonemelength",
+                        "type": "number",
+                        "default": 0.0
+                    },
+                    "postPhonemeLength": {
+                        "title": "Postphonemelength",
+                        "type": "number",
+                        "default": 0.0
+                    },
+                    "outputSamplingRate": {
+                        "title": "Outputsamplingrate",
+                        "type": "integer",
+                        "default": 44100
+                    }
+                }
+            },
+            "DictionaryWord": {
+                "title": "DictionaryWord",
+                "required": [
+                    "word",
+                    "yomi",
+                    "accent",
+                    "numMoras"
+                ],
+                "type": "object",
+                "properties": {
+                    "word": {
+                        "title": "Word",
+                        "type": "string"
+                    },
+                    "yomi": {
+                        "title": "Yomi",
+                        "type": "string"
+                    },
+                    "accent": {
+                        "title": "Accent",
+                        "type": "integer"
+                    },
+                    "numMoras": {
+                        "title": "Nummoras",
+                        "type": "integer"
+                    }
+                }
+            },
+            "DictionaryWords": {
+                "title": "DictionaryWords",
+                "required": [
+                    "dictionaryWords"
+                ],
+                "type": "object",
+                "properties": {
+                    "dictionaryWords": {
+                        "title": "Dictionarywords",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/DictionaryWord"
+                        }
+                    }
+                }
+            },
+            "DownloadableModel": {
+                "title": "DownloadableModel",
+                "required": [
+                    "download_path",
+                    "volume",
+                    "speaker",
+                    "speaker_info"
+                ],
+                "type": "object",
+                "properties": {
+                    "download_path": {
+                        "title": "Download Path",
+                        "type": "string"
+                    },
+                    "volume": {
+                        "title": "Volume",
+                        "type": "string"
+                    },
+                    "speaker": {
+                        "$ref": "#/components/schemas/Speaker"
+                    },
+                    "speaker_info": {
+                        "$ref": "#/components/schemas/SpeakerInfo"
+                    }
+                }
+            },
+            "EngineInfo": {
+                "title": "EngineInfo",
+                "required": [
+                    "device",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "device": {
+                        "title": "Device",
+                        "type": "string"
+                    },
+                    "version": {
+                        "title": "Version",
+                        "type": "string"
+                    }
+                }
+            },
+            "HTTPValidationError": {
+                "title": "HTTPValidationError",
+                "type": "object",
+                "properties": {
+                    "detail": {
+                        "title": "Detail",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        }
+                    }
+                }
+            },
+            "MoraDuration": {
+                "title": "MoraDuration",
+                "required": [
+                    "mora",
+                    "hira",
+                    "phonemePitches",
+                    "wavRange"
+                ],
+                "type": "object",
+                "properties": {
+                    "mora": {
+                        "title": "Mora",
+                        "type": "string"
+                    },
+                    "hira": {
+                        "title": "Hira",
+                        "type": "string"
+                    },
+                    "phonemePitches": {
+                        "title": "Phonemepitches",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/PhonemeDuration"
+                        }
+                    },
+                    "wavRange": {
+                        "$ref": "#/components/schemas/TimeRange"
+                    }
+                }
+            },
+            "PhonemeDuration": {
+                "title": "PhonemeDuration",
+                "required": [
+                    "phoneme",
+                    "wavRange"
+                ],
+                "type": "object",
+                "properties": {
+                    "phoneme": {
+                        "title": "Phoneme",
+                        "type": "string"
+                    },
+                    "wavRange": {
+                        "$ref": "#/components/schemas/TimeRange"
+                    }
+                }
+            },
+            "Prosody": {
+                "title": "Prosody",
+                "required": [
+                    "plain",
+                    "detail"
+                ],
+                "type": "object",
+                "properties": {
+                    "plain": {
+                        "title": "Plain",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "detail": {
+                        "title": "Detail",
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/coeirocore__mora__Mora"
+                            }
+                        }
+                    }
+                }
+            },
+            "ProsodyMakingParam": {
+                "title": "ProsodyMakingParam",
+                "required": [
+                    "text"
+                ],
+                "type": "object",
+                "properties": {
+                    "text": {
+                        "title": "Text",
+                        "type": "string"
+                    }
+                }
+            },
+            "Speaker": {
+                "title": "Speaker",
+                "required": [
+                    "name",
+                    "speaker_uuid",
+                    "styles",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "title": "Name",
+                        "type": "string"
+                    },
+                    "speaker_uuid": {
+                        "title": "Speaker Uuid",
+                        "type": "string"
+                    },
+                    "styles": {
+                        "title": "Styles",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/coeirocore__model__Style"
+                        }
+                    },
+                    "version": {
+                        "title": "Version",
+                        "type": "string"
+                    }
+                }
+            },
+            "SpeakerFolderPath": {
+                "title": "SpeakerFolderPath",
+                "required": [
+                    "speakerFolderPath"
+                ],
+                "type": "object",
+                "properties": {
+                    "speakerFolderPath": {
+                        "title": "Speakerfolderpath",
+                        "type": "string"
+                    }
+                }
+            },
+            "SpeakerInfo": {
+                "title": "SpeakerInfo",
+                "required": [
+                    "policy",
+                    "portrait",
+                    "style_infos"
+                ],
+                "type": "object",
+                "properties": {
+                    "policy": {
+                        "title": "Policy",
+                        "type": "string"
+                    },
+                    "portrait": {
+                        "title": "Portrait",
+                        "type": "string"
+                    },
+                    "style_infos": {
+                        "title": "Style Infos",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/StyleInfo"
+                        }
+                    }
+                }
+            },
+            "SpeakerMeta": {
+                "title": "SpeakerMeta",
+                "required": [
+                    "speakerName",
+                    "speakerUuid",
+                    "styles",
+                    "base64Portrait"
+                ],
+                "type": "object",
+                "properties": {
+                    "speakerName": {
+                        "title": "Speakername",
+                        "type": "string"
+                    },
+                    "speakerUuid": {
+                        "title": "Speakeruuid",
+                        "type": "string"
+                    },
+                    "styles": {
+                        "title": "Styles",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/coeirocore__meta__Style"
+                        }
+                    },
+                    "version": {
+                        "title": "Version",
+                        "type": "string",
+                        "default": "0.0.1"
+                    },
+                    "base64Portrait": {
+                        "title": "Base64Portrait",
+                        "type": "string"
+                    }
+                }
+            },
+            "SpeakerMetaForTextBox": {
+                "title": "SpeakerMetaForTextBox",
+                "required": [
+                    "speakerUuid",
+                    "styleId",
+                    "speakerName",
+                    "styleName"
+                ],
+                "type": "object",
+                "properties": {
+                    "speakerUuid": {
+                        "title": "Speakeruuid",
+                        "type": "string"
+                    },
+                    "styleId": {
+                        "title": "Styleid",
+                        "type": "integer"
+                    },
+                    "speakerName": {
+                        "title": "Speakername",
+                        "type": "string"
+                    },
+                    "styleName": {
+                        "title": "Stylename",
+                        "type": "string"
+                    }
+                }
+            },
+            "SpeakerPolicy": {
+                "title": "SpeakerPolicy",
+                "type": "object",
+                "properties": {
+                    "policy": {
+                        "title": "Policy",
+                        "type": "string"
+                    },
+                    "license": {
+                        "title": "License",
+                        "type": "string"
+                    }
+                }
+            },
+            "Status": {
+                "title": "Status",
+                "required": [
+                    "status"
+                ],
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "title": "Status",
+                        "type": "string"
+                    }
+                }
+            },
+            "StyleInfo": {
+                "title": "StyleInfo",
+                "required": [
+                    "id",
+                    "icon",
+                    "voice_samples"
+                ],
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "title": "Id",
+                        "type": "integer"
+                    },
+                    "icon": {
+                        "title": "Icon",
+                        "type": "string"
+                    },
+                    "voice_samples": {
+                        "title": "Voice Samples",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "SynthesisParam": {
+                "title": "SynthesisParam",
+                "required": [
+                    "speakerUuid",
+                    "styleId",
+                    "text",
+                    "speedScale",
+                    "volumeScale",
+                    "pitchScale",
+                    "intonationScale",
+                    "prePhonemeLength",
+                    "postPhonemeLength",
+                    "outputSamplingRate"
+                ],
+                "type": "object",
+                "properties": {
+                    "speakerUuid": {
+                        "title": "Speakeruuid",
+                        "type": "string"
+                    },
+                    "styleId": {
+                        "title": "Styleid",
+                        "type": "integer"
+                    },
+                    "text": {
+                        "title": "Text",
+                        "type": "string"
+                    },
+                    "prosodyDetail": {
+                        "title": "Prosodydetail",
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/coeirocore__mora__Mora"
+                            }
+                        }
+                    },
+                    "speedScale": {
+                        "title": "Speedscale",
+                        "type": "number"
+                    },
+                    "volumeScale": {
+                        "title": "Volumescale",
+                        "type": "number"
+                    },
+                    "pitchScale": {
+                        "title": "Pitchscale",
+                        "type": "number"
+                    },
+                    "intonationScale": {
+                        "title": "Intonationscale",
+                        "type": "number"
+                    },
+                    "prePhonemeLength": {
+                        "title": "Prephonemelength",
+                        "type": "number"
+                    },
+                    "postPhonemeLength": {
+                        "title": "Postphonemelength",
+                        "type": "number"
+                    },
+                    "outputSamplingRate": {
+                        "title": "Outputsamplingrate",
+                        "type": "integer"
+                    }
+                }
+            },
+            "TimeRange": {
+                "title": "TimeRange",
+                "required": [
+                    "start",
+                    "end"
+                ],
+                "type": "object",
+                "properties": {
+                    "start": {
+                        "title": "Start",
+                        "type": "integer"
+                    },
+                    "end": {
+                        "title": "End",
+                        "type": "integer"
+                    }
+                }
+            },
+            "ValidationError": {
+                "title": "ValidationError",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "type": "object",
+                "properties": {
+                    "loc": {
+                        "title": "Location",
+                        "type": "array",
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        }
+                    },
+                    "msg": {
+                        "title": "Message",
+                        "type": "string"
+                    },
+                    "type": {
+                        "title": "Error Type",
+                        "type": "string"
+                    }
+                }
+            },
+            "WavMakingParam": {
+                "title": "WavMakingParam",
+                "required": [
+                    "speakerUuid",
+                    "styleId",
+                    "text",
+                    "speedScale"
+                ],
+                "type": "object",
+                "properties": {
+                    "speakerUuid": {
+                        "title": "Speakeruuid",
+                        "type": "string"
+                    },
+                    "styleId": {
+                        "title": "Styleid",
+                        "type": "integer"
+                    },
+                    "text": {
+                        "title": "Text",
+                        "type": "string"
+                    },
+                    "prosodyDetail": {
+                        "title": "Prosodydetail",
+                        "type": "array",
+                        "items": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/components/schemas/coeirocore__mora__Mora"
+                            }
+                        }
+                    },
+                    "speedScale": {
+                        "title": "Speedscale",
+                        "type": "number"
+                    }
+                }
+            },
+            "WavProcessingParam": {
+                "title": "WavProcessingParam",
+                "required": [
+                    "wavBase64",
+                    "volumeScale",
+                    "pitchScale",
+                    "intonationScale",
+                    "prePhonemeLength",
+                    "postPhonemeLength",
+                    "outputSamplingRate"
+                ],
+                "type": "object",
+                "properties": {
+                    "wavBase64": {
+                        "title": "Wavbase64",
+                        "type": "string"
+                    },
+                    "volumeScale": {
+                        "title": "Volumescale",
+                        "type": "number"
+                    },
+                    "pitchScale": {
+                        "title": "Pitchscale",
+                        "type": "number"
+                    },
+                    "intonationScale": {
+                        "title": "Intonationscale",
+                        "type": "number"
+                    },
+                    "prePhonemeLength": {
+                        "title": "Prephonemelength",
+                        "type": "number"
+                    },
+                    "postPhonemeLength": {
+                        "title": "Postphonemelength",
+                        "type": "number"
+                    },
+                    "outputSamplingRate": {
+                        "title": "Outputsamplingrate",
+                        "type": "integer"
+                    },
+                    "adjustedF0": {
+                        "title": "Adjustedf0",
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        }
+                    }
+                }
+            },
+            "WavWithDuration": {
+                "title": "WavWithDuration",
+                "required": [
+                    "wavBase64",
+                    "moraDurations"
+                ],
+                "type": "object",
+                "properties": {
+                    "wavBase64": {
+                        "title": "Wavbase64",
+                        "type": "string"
+                    },
+                    "moraDurations": {
+                        "title": "Moradurations",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MoraDuration"
+                        }
+                    }
+                }
+            },
+            "WorldF0": {
+                "title": "WorldF0",
+                "required": [
+                    "f0",
+                    "moraDurations"
+                ],
+                "type": "object",
+                "properties": {
+                    "f0": {
+                        "title": "F0",
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        }
+                    },
+                    "moraDurations": {
+                        "title": "Moradurations",
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/MoraDuration"
+                        }
+                    }
+                }
+            },
+            "coeirocore__meta__Style": {
+                "title": "Style",
+                "required": [
+                    "styleName",
+                    "styleId",
+                    "base64Icon"
+                ],
+                "type": "object",
+                "properties": {
+                    "styleName": {
+                        "title": "Stylename",
+                        "type": "string"
+                    },
+                    "styleId": {
+                        "title": "Styleid",
+                        "type": "integer"
+                    },
+                    "base64Icon": {
+                        "title": "Base64Icon",
+                        "type": "string"
+                    },
+                    "base64Portrait": {
+                        "title": "Base64Portrait",
+                        "type": "string"
+                    }
+                }
+            },
+            "coeirocore__model__Style": {
+                "title": "Style",
+                "required": [
+                    "name",
+                    "id"
+                ],
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "title": "Name",
+                        "type": "string"
+                    },
+                    "id": {
+                        "title": "Id",
+                        "type": "integer"
+                    }
+                }
+            },
+            "coeirocore__mora__Mora": {
+                "title": "Mora",
+                "required": [
+                    "phoneme",
+                    "hira",
+                    "accent"
+                ],
+                "type": "object",
+                "properties": {
+                    "phoneme": {
+                        "title": "Phoneme",
+                        "type": "string"
+                    },
+                    "hira": {
+                        "title": "Hira",
+                        "type": "string"
+                    },
+                    "accent": {
+                        "title": "Accent",
+                        "type": "integer"
+                    }
+                }
+            },
+            "coeirocore__v_util__Mora": {
+                "title": "Mora",
+                "required": [
+                    "text",
+                    "vowel",
+                    "vowelLength",
+                    "pitch"
+                ],
+                "type": "object",
+                "properties": {
+                    "text": {
+                        "title": "Text",
+                        "type": "string"
+                    },
+                    "consonant": {
+                        "title": "Consonant",
+                        "type": "string"
+                    },
+                    "consonantLength": {
+                        "title": "Consonantlength",
+                        "type": "number"
+                    },
+                    "vowel": {
+                        "title": "Vowel",
+                        "type": "string"
+                    },
+                    "vowelLength": {
+                        "title": "Vowellength",
+                        "type": "number"
+                    },
+                    "pitch": {
+                        "title": "Pitch",
+                        "type": "number"
+                    }
+                }
+            }
+        }
+    }
+}

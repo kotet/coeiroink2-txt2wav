@@ -1,0 +1,1417 @@
+openapi: 3.0.2
+info:
+  title: FastAPI
+  version: 0.1.0
+servers:
+- url: /
+paths:
+  /:
+    get:
+      description: エンジンの起動状態を取得。
+      operationId: read_root__get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+          description: Successful Response
+      summary: Read Root
+  /v1/speakers:
+    get:
+      description: 話者情報の取得。
+      operationId: speakers_v1_speakers_get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/SpeakerMeta'
+                title: Response Speakers V1 Speakers Get
+                type: array
+          description: Successful Response
+      summary: Speakers
+  /v1/estimate_prosody:
+    post:
+      description: テキストから韻律を取得。
+      operationId: estimate_prosody_v1_estimate_prosody_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProsodyMakingParam'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Prosody'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Estimate Prosody
+  /v1/estimate_f0:
+    post:
+      description: wavの周波数情報を取得。
+      operationId: estimate_f0_v1_estimate_f0_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WavWithDuration'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorldF0'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Estimate F0
+  /v1/predict:
+    post:
+      description: テキストから音声を予測。機械学習による推論処理なので時間がかかる。prosodyDetailなしでtextだけでも推論可能。textとprosodyDetailではprosodyDetailが優先される。
+      operationId: predict_v1_predict_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WavMakingParam'
+        required: true
+      responses:
+        "200":
+          content:
+            audio/wav:
+              schema:
+                format: binary
+                type: string
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Predict
+  /v1/predict_with_duration:
+    post:
+      description: predictと同時にduration情報も得る。
+      operationId: predict_v1_predict_with_duration_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WavMakingParam'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WavWithDuration'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Predict
+  /v1/process:
+    post:
+      description: 音声を加工。機械学習による推論ではないため処理時間は短い。
+      operationId: process_v1_process_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_process_v1_process_post'
+        required: true
+      responses:
+        "200":
+          content:
+            audio/wav:
+              schema:
+                format: binary
+                type: string
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Process
+  /v1/process_with_pitch:
+    post:
+      description: pitch調整も含めた音声の加工。
+      operationId: process_v1_process_with_pitch_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WavProcessingParam'
+        required: true
+      responses:
+        "200":
+          content:
+            audio/wav:
+              schema:
+                format: binary
+                type: string
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Process
+  /v1/synthesis:
+    post:
+      description: predict+processの処理。
+      operationId: synthesis_v1_synthesis_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SynthesisParam'
+        required: true
+      responses:
+        "200":
+          content:
+            audio/wav:
+              schema:
+                format: binary
+                type: string
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Synthesis
+  /v1/set_dictionary:
+    post:
+      description: 辞書の設定。
+      operationId: set_dictionary_v1_set_dictionary_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DictionaryWords'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: {}
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Set Dictionary
+  /v1/download_infos:
+    get:
+      description: キャラクターダウンロード情報を取得。
+      operationId: download_infos_v1_download_infos_get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/DownloadableModel'
+                title: Response Download Infos V1 Download Infos Get
+                type: array
+          description: Successful Response
+      summary: Download Infos
+  /v1/speaker_folder_path:
+    get:
+      description: キャラクターのフォルダパスを取得。
+      operationId: speaker_folder_path_v1_speaker_folder_path_get
+      parameters:
+      - explode: true
+        in: query
+        name: speakerUuid
+        required: false
+        schema:
+          title: Speakeruuid
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpeakerFolderPath'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Speaker Folder Path
+  /v1/query2prosody:
+    post:
+      description: v1のqueryをprosodyに変換。
+      operationId: speaker_folder_path_v1_query2prosody_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AudioQuery'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Prosody'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Speaker Folder Path
+  /v1/style_id_to_speaker_meta:
+    post:
+      description: style_idだけでスピーカー情報を取得。重複があった場合は後にロードしたスピーカーが優先される。
+      operationId: speaker_folder_path_v1_style_id_to_speaker_meta_post
+      parameters:
+      - explode: true
+        in: query
+        name: styleId
+        required: false
+        schema:
+          title: Styleid
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpeakerMetaForTextBox'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Speaker Folder Path
+  /v1/sample_voice:
+    get:
+      description: 話者のサンプルボイスを取得する。
+      operationId: get_sample_voice_v1_sample_voice_get
+      parameters:
+      - explode: true
+        in: query
+        name: speakerUuid
+        required: false
+        schema:
+          title: Speakeruuid
+          type: string
+        style: form
+      - explode: true
+        in: query
+        name: styleId
+        required: false
+        schema:
+          title: Styleid
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: index
+        required: false
+        schema:
+          title: Index
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            audio/wav:
+              schema:
+                format: binary
+                type: string
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Sample Voice
+  /v1/speaker_policy:
+    get:
+      description: 話者のpolicyファイルを取得する
+      operationId: get_speaker_policy_v1_speaker_policy_get
+      parameters:
+      - explode: true
+        in: query
+        name: speakerUuid
+        required: false
+        schema:
+          title: Speakeruuid
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SpeakerPolicy'
+          description: Successful Response
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+          description: Validation Error
+      summary: Get Speaker Policy
+  /v1/engine_info:
+    get:
+      description: エンジンの情報を取得する。
+      operationId: get_engine_info_v1_engine_info_get
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EngineInfo'
+          description: Successful Response
+      summary: Get Engine Info
+components:
+  schemas:
+    AccentPhrase:
+      example:
+        moras:
+        - consonantLength: 0.8008281904610115
+          consonant: consonant
+          vowel: vowel
+          vowelLength: 6.027456183070403
+          text: text
+          pitch: 1.4658129805029452
+        - consonantLength: 0.8008281904610115
+          consonant: consonant
+          vowel: vowel
+          vowelLength: 6.027456183070403
+          text: text
+          pitch: 1.4658129805029452
+        pauseMora:
+          consonantLength: 0.8008281904610115
+          consonant: consonant
+          vowel: vowel
+          vowelLength: 6.027456183070403
+          text: text
+          pitch: 1.4658129805029452
+        accent: 5
+        isInterrogative: true
+      properties:
+        moras:
+          items:
+            $ref: '#/components/schemas/coeirocore__v_util__Mora'
+          title: Moras
+          type: array
+        accent:
+          title: Accent
+          type: integer
+        pauseMora:
+          $ref: '#/components/schemas/coeirocore__v_util__Mora'
+        isInterrogative:
+          title: Isinterrogative
+          type: boolean
+      required:
+      - accent
+      - isInterrogative
+      - moras
+      title: AccentPhrase
+      type: object
+    AudioQuery:
+      example:
+        accentPhrases:
+        - moras:
+          - consonantLength: 0.8008281904610115
+            consonant: consonant
+            vowel: vowel
+            vowelLength: 6.027456183070403
+            text: text
+            pitch: 1.4658129805029452
+          - consonantLength: 0.8008281904610115
+            consonant: consonant
+            vowel: vowel
+            vowelLength: 6.027456183070403
+            text: text
+            pitch: 1.4658129805029452
+          pauseMora:
+            consonantLength: 0.8008281904610115
+            consonant: consonant
+            vowel: vowel
+            vowelLength: 6.027456183070403
+            text: text
+            pitch: 1.4658129805029452
+          accent: 5
+          isInterrogative: true
+        - moras:
+          - consonantLength: 0.8008281904610115
+            consonant: consonant
+            vowel: vowel
+            vowelLength: 6.027456183070403
+            text: text
+            pitch: 1.4658129805029452
+          - consonantLength: 0.8008281904610115
+            consonant: consonant
+            vowel: vowel
+            vowelLength: 6.027456183070403
+            text: text
+            pitch: 1.4658129805029452
+          pauseMora:
+            consonantLength: 0.8008281904610115
+            consonant: consonant
+            vowel: vowel
+            vowelLength: 6.027456183070403
+            text: text
+            pitch: 1.4658129805029452
+          accent: 5
+          isInterrogative: true
+        postPhonemeLength: 2.027123023002322
+        intonationScale: 7.061401241503109
+        pitchScale: 2.3021358869347655
+        outputSamplingRate: 4
+        volumeScale: 9.301444243932576
+        kana: kana
+        speedScale: 5.637376656633329
+        outputStereo: true
+        prePhonemeLength: 3.616076749251911
+      properties:
+        accentPhrases:
+          items:
+            $ref: '#/components/schemas/AccentPhrase'
+          title: Accentphrases
+          type: array
+        speedScale:
+          title: Speedscale
+          type: number
+        pitchScale:
+          title: Pitchscale
+          type: number
+        intonationScale:
+          title: Intonationscale
+          type: number
+        volumeScale:
+          title: Volumescale
+          type: number
+        prePhonemeLength:
+          title: Prephonemelength
+          type: number
+        postPhonemeLength:
+          title: Postphonemelength
+          type: number
+        outputSamplingRate:
+          title: Outputsamplingrate
+          type: integer
+        outputStereo:
+          title: Outputstereo
+          type: boolean
+        kana:
+          title: Kana
+          type: string
+      required:
+      - accentPhrases
+      - intonationScale
+      - outputSamplingRate
+      - outputStereo
+      - pitchScale
+      - postPhonemeLength
+      - prePhonemeLength
+      - speedScale
+      - volumeScale
+      title: AudioQuery
+      type: object
+    Body_process_v1_process_post:
+      properties:
+        wav:
+          format: binary
+          title: Wav
+          type: string
+        volumeScale:
+          default: 1.0
+          title: Volumescale
+          type: number
+        pitchScale:
+          default: 0.0
+          title: Pitchscale
+          type: number
+        intonationScale:
+          default: 1.0
+          title: Intonationscale
+          type: number
+        prePhonemeLength:
+          default: 0.0
+          title: Prephonemelength
+          type: number
+        postPhonemeLength:
+          default: 0.0
+          title: Postphonemelength
+          type: number
+        outputSamplingRate:
+          default: 44100
+          title: Outputsamplingrate
+          type: integer
+      required:
+      - wav
+      title: Body_process_v1_process_post
+      type: object
+    DictionaryWord:
+      example:
+        numMoras: 6
+        yomi: yomi
+        word: word
+        accent: 0
+      properties:
+        word:
+          title: Word
+          type: string
+        yomi:
+          title: Yomi
+          type: string
+        accent:
+          title: Accent
+          type: integer
+        numMoras:
+          title: Nummoras
+          type: integer
+      required:
+      - accent
+      - numMoras
+      - word
+      - yomi
+      title: DictionaryWord
+      type: object
+    DictionaryWords:
+      example:
+        dictionaryWords:
+        - numMoras: 6
+          yomi: yomi
+          word: word
+          accent: 0
+        - numMoras: 6
+          yomi: yomi
+          word: word
+          accent: 0
+      properties:
+        dictionaryWords:
+          items:
+            $ref: '#/components/schemas/DictionaryWord'
+          title: Dictionarywords
+          type: array
+      required:
+      - dictionaryWords
+      title: DictionaryWords
+      type: object
+    DownloadableModel:
+      example:
+        volume: volume
+        speaker_info:
+          style_infos:
+          - icon: icon
+            voice_samples:
+            - voice_samples
+            - voice_samples
+            id: 6
+          - icon: icon
+            voice_samples:
+            - voice_samples
+            - voice_samples
+            id: 6
+          portrait: portrait
+          policy: policy
+        speaker:
+          name: name
+          styles:
+          - name: name
+            id: 0
+          - name: name
+            id: 0
+          speaker_uuid: speaker_uuid
+          version: version
+        download_path: download_path
+      properties:
+        download_path:
+          title: Download Path
+          type: string
+        volume:
+          title: Volume
+          type: string
+        speaker:
+          $ref: '#/components/schemas/Speaker'
+        speaker_info:
+          $ref: '#/components/schemas/SpeakerInfo'
+      required:
+      - download_path
+      - speaker
+      - speaker_info
+      - volume
+      title: DownloadableModel
+      type: object
+    EngineInfo:
+      example:
+        device: device
+        version: version
+      properties:
+        device:
+          title: Device
+          type: string
+        version:
+          title: Version
+          type: string
+      required:
+      - device
+      - version
+      title: EngineInfo
+      type: object
+    HTTPValidationError:
+      example:
+        detail:
+        - msg: msg
+          loc:
+          - Location_inner
+          - Location_inner
+          type: type
+        - msg: msg
+          loc:
+          - Location_inner
+          - Location_inner
+          type: type
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          title: Detail
+          type: array
+      title: HTTPValidationError
+      type: object
+    MoraDuration:
+      example:
+        hira: hira
+        mora: mora
+        wavRange:
+          start: 6
+          end: 1
+        phonemePitches:
+        - wavRange:
+            start: 6
+            end: 1
+          phoneme: phoneme
+        - wavRange:
+            start: 6
+            end: 1
+          phoneme: phoneme
+      properties:
+        mora:
+          title: Mora
+          type: string
+        hira:
+          title: Hira
+          type: string
+        phonemePitches:
+          items:
+            $ref: '#/components/schemas/PhonemeDuration'
+          title: Phonemepitches
+          type: array
+        wavRange:
+          $ref: '#/components/schemas/TimeRange'
+      required:
+      - hira
+      - mora
+      - phonemePitches
+      - wavRange
+      title: MoraDuration
+      type: object
+    PhonemeDuration:
+      example:
+        wavRange:
+          start: 6
+          end: 1
+        phoneme: phoneme
+      properties:
+        phoneme:
+          title: Phoneme
+          type: string
+        wavRange:
+          $ref: '#/components/schemas/TimeRange'
+      required:
+      - phoneme
+      - wavRange
+      title: PhonemeDuration
+      type: object
+    Prosody:
+      example:
+        plain:
+        - plain
+        - plain
+        detail:
+        - - hira: hira
+            phoneme: phoneme
+            accent: 0
+          - hira: hira
+            phoneme: phoneme
+            accent: 0
+        - - hira: hira
+            phoneme: phoneme
+            accent: 0
+          - hira: hira
+            phoneme: phoneme
+            accent: 0
+      properties:
+        plain:
+          items:
+            type: string
+          title: Plain
+          type: array
+        detail:
+          items:
+            items:
+              $ref: '#/components/schemas/coeirocore__mora__Mora'
+            type: array
+          title: Detail
+          type: array
+      required:
+      - detail
+      - plain
+      title: Prosody
+      type: object
+    ProsodyMakingParam:
+      example:
+        text: text
+      properties:
+        text:
+          title: Text
+          type: string
+      required:
+      - text
+      title: ProsodyMakingParam
+      type: object
+    Speaker:
+      example:
+        name: name
+        styles:
+        - name: name
+          id: 0
+        - name: name
+          id: 0
+        speaker_uuid: speaker_uuid
+        version: version
+      properties:
+        name:
+          title: Name
+          type: string
+        speaker_uuid:
+          title: Speaker Uuid
+          type: string
+        styles:
+          items:
+            $ref: '#/components/schemas/coeirocore__model__Style'
+          title: Styles
+          type: array
+        version:
+          title: Version
+          type: string
+      required:
+      - name
+      - speaker_uuid
+      - styles
+      - version
+      title: Speaker
+      type: object
+    SpeakerFolderPath:
+      example:
+        speakerFolderPath: speakerFolderPath
+      properties:
+        speakerFolderPath:
+          title: Speakerfolderpath
+          type: string
+      required:
+      - speakerFolderPath
+      title: SpeakerFolderPath
+      type: object
+    SpeakerInfo:
+      example:
+        style_infos:
+        - icon: icon
+          voice_samples:
+          - voice_samples
+          - voice_samples
+          id: 6
+        - icon: icon
+          voice_samples:
+          - voice_samples
+          - voice_samples
+          id: 6
+        portrait: portrait
+        policy: policy
+      properties:
+        policy:
+          title: Policy
+          type: string
+        portrait:
+          title: Portrait
+          type: string
+        style_infos:
+          items:
+            $ref: '#/components/schemas/StyleInfo'
+          title: Style Infos
+          type: array
+      required:
+      - policy
+      - portrait
+      - style_infos
+      title: SpeakerInfo
+      type: object
+    SpeakerMeta:
+      example:
+        base64Portrait: base64Portrait
+        speakerName: speakerName
+        speakerUuid: speakerUuid
+        styles:
+        - base64Portrait: base64Portrait
+          base64Icon: base64Icon
+          styleId: 0
+          styleName: styleName
+        - base64Portrait: base64Portrait
+          base64Icon: base64Icon
+          styleId: 0
+          styleName: styleName
+        version: 0.0.1
+      properties:
+        speakerName:
+          title: Speakername
+          type: string
+        speakerUuid:
+          title: Speakeruuid
+          type: string
+        styles:
+          items:
+            $ref: '#/components/schemas/coeirocore__meta__Style'
+          title: Styles
+          type: array
+        version:
+          default: 0.0.1
+          title: Version
+          type: string
+        base64Portrait:
+          title: Base64Portrait
+          type: string
+      required:
+      - base64Portrait
+      - speakerName
+      - speakerUuid
+      - styles
+      title: SpeakerMeta
+      type: object
+    SpeakerMetaForTextBox:
+      example:
+        speakerName: speakerName
+        styleId: 0
+        speakerUuid: speakerUuid
+        styleName: styleName
+      properties:
+        speakerUuid:
+          title: Speakeruuid
+          type: string
+        styleId:
+          title: Styleid
+          type: integer
+        speakerName:
+          title: Speakername
+          type: string
+        styleName:
+          title: Stylename
+          type: string
+      required:
+      - speakerName
+      - speakerUuid
+      - styleId
+      - styleName
+      title: SpeakerMetaForTextBox
+      type: object
+    SpeakerPolicy:
+      example:
+        license: license
+        policy: policy
+      properties:
+        policy:
+          title: Policy
+          type: string
+        license:
+          title: License
+          type: string
+      title: SpeakerPolicy
+      type: object
+    Status:
+      example:
+        status: status
+      properties:
+        status:
+          title: Status
+          type: string
+      required:
+      - status
+      title: Status
+      type: object
+    StyleInfo:
+      example:
+        icon: icon
+        voice_samples:
+        - voice_samples
+        - voice_samples
+        id: 6
+      properties:
+        id:
+          title: Id
+          type: integer
+        icon:
+          title: Icon
+          type: string
+        voice_samples:
+          items:
+            type: string
+          title: Voice Samples
+          type: array
+      required:
+      - icon
+      - id
+      - voice_samples
+      title: StyleInfo
+      type: object
+    SynthesisParam:
+      example:
+        postPhonemeLength: 7.061401241503109
+        intonationScale: 5.637376656633329
+        styleId: 0
+        pitchScale: 5.962133916683182
+        prosodyDetail:
+        - - hira: hira
+            phoneme: phoneme
+            accent: 0
+          - hira: hira
+            phoneme: phoneme
+            accent: 0
+        - - hira: hira
+            phoneme: phoneme
+            accent: 0
+          - hira: hira
+            phoneme: phoneme
+            accent: 0
+        speakerUuid: speakerUuid
+        outputSamplingRate: 9
+        text: text
+        volumeScale: 1.4658129805029452
+        speedScale: 6.027456183070403
+        prePhonemeLength: 2.3021358869347655
+      properties:
+        speakerUuid:
+          title: Speakeruuid
+          type: string
+        styleId:
+          title: Styleid
+          type: integer
+        text:
+          title: Text
+          type: string
+        prosodyDetail:
+          items:
+            items:
+              $ref: '#/components/schemas/coeirocore__mora__Mora'
+            type: array
+          title: Prosodydetail
+          type: array
+        speedScale:
+          title: Speedscale
+          type: number
+        volumeScale:
+          title: Volumescale
+          type: number
+        pitchScale:
+          title: Pitchscale
+          type: number
+        intonationScale:
+          title: Intonationscale
+          type: number
+        prePhonemeLength:
+          title: Prephonemelength
+          type: number
+        postPhonemeLength:
+          title: Postphonemelength
+          type: number
+        outputSamplingRate:
+          title: Outputsamplingrate
+          type: integer
+      required:
+      - intonationScale
+      - outputSamplingRate
+      - pitchScale
+      - postPhonemeLength
+      - prePhonemeLength
+      - speakerUuid
+      - speedScale
+      - styleId
+      - text
+      - volumeScale
+      title: SynthesisParam
+      type: object
+    TimeRange:
+      example:
+        start: 6
+        end: 1
+      properties:
+        start:
+          title: Start
+          type: integer
+        end:
+          title: End
+          type: integer
+      required:
+      - end
+      - start
+      title: TimeRange
+      type: object
+    ValidationError:
+      example:
+        msg: msg
+        loc:
+        - Location_inner
+        - Location_inner
+        type: type
+      properties:
+        loc:
+          items:
+            $ref: '#/components/schemas/Location_inner'
+          title: Location
+          type: array
+        msg:
+          title: Message
+          type: string
+        type:
+          title: Error Type
+          type: string
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+      type: object
+    WavMakingParam:
+      example:
+        styleId: 0
+        prosodyDetail:
+        - - hira: hira
+            phoneme: phoneme
+            accent: 0
+          - hira: hira
+            phoneme: phoneme
+            accent: 0
+        - - hira: hira
+            phoneme: phoneme
+            accent: 0
+          - hira: hira
+            phoneme: phoneme
+            accent: 0
+        speakerUuid: speakerUuid
+        text: text
+        speedScale: 6.027456183070403
+      properties:
+        speakerUuid:
+          title: Speakeruuid
+          type: string
+        styleId:
+          title: Styleid
+          type: integer
+        text:
+          title: Text
+          type: string
+        prosodyDetail:
+          items:
+            items:
+              $ref: '#/components/schemas/coeirocore__mora__Mora'
+            type: array
+          title: Prosodydetail
+          type: array
+        speedScale:
+          title: Speedscale
+          type: number
+      required:
+      - speakerUuid
+      - speedScale
+      - styleId
+      - text
+      title: WavMakingParam
+      type: object
+    WavProcessingParam:
+      example:
+        postPhonemeLength: 5.637376656633329
+        intonationScale: 1.4658129805029452
+        wavBase64: wavBase64
+        pitchScale: 6.027456183070403
+        outputSamplingRate: 2
+        volumeScale: 0.8008281904610115
+        adjustedF0:
+        - 7.061401241503109
+        - 7.061401241503109
+        prePhonemeLength: 5.962133916683182
+      properties:
+        wavBase64:
+          title: Wavbase64
+          type: string
+        volumeScale:
+          title: Volumescale
+          type: number
+        pitchScale:
+          title: Pitchscale
+          type: number
+        intonationScale:
+          title: Intonationscale
+          type: number
+        prePhonemeLength:
+          title: Prephonemelength
+          type: number
+        postPhonemeLength:
+          title: Postphonemelength
+          type: number
+        outputSamplingRate:
+          title: Outputsamplingrate
+          type: integer
+        adjustedF0:
+          items:
+            type: number
+          title: Adjustedf0
+          type: array
+      required:
+      - intonationScale
+      - outputSamplingRate
+      - pitchScale
+      - postPhonemeLength
+      - prePhonemeLength
+      - volumeScale
+      - wavBase64
+      title: WavProcessingParam
+      type: object
+    WavWithDuration:
+      example:
+        wavBase64: wavBase64
+        moraDurations:
+        - hira: hira
+          mora: mora
+          wavRange:
+            start: 6
+            end: 1
+          phonemePitches:
+          - wavRange:
+              start: 6
+              end: 1
+            phoneme: phoneme
+          - wavRange:
+              start: 6
+              end: 1
+            phoneme: phoneme
+        - hira: hira
+          mora: mora
+          wavRange:
+            start: 6
+            end: 1
+          phonemePitches:
+          - wavRange:
+              start: 6
+              end: 1
+            phoneme: phoneme
+          - wavRange:
+              start: 6
+              end: 1
+            phoneme: phoneme
+      properties:
+        wavBase64:
+          title: Wavbase64
+          type: string
+        moraDurations:
+          items:
+            $ref: '#/components/schemas/MoraDuration'
+          title: Moradurations
+          type: array
+      required:
+      - moraDurations
+      - wavBase64
+      title: WavWithDuration
+      type: object
+    WorldF0:
+      example:
+        f0:
+        - 0.8008281904610115
+        - 0.8008281904610115
+        moraDurations:
+        - hira: hira
+          mora: mora
+          wavRange:
+            start: 6
+            end: 1
+          phonemePitches:
+          - wavRange:
+              start: 6
+              end: 1
+            phoneme: phoneme
+          - wavRange:
+              start: 6
+              end: 1
+            phoneme: phoneme
+        - hira: hira
+          mora: mora
+          wavRange:
+            start: 6
+            end: 1
+          phonemePitches:
+          - wavRange:
+              start: 6
+              end: 1
+            phoneme: phoneme
+          - wavRange:
+              start: 6
+              end: 1
+            phoneme: phoneme
+      properties:
+        f0:
+          items:
+            type: number
+          title: F0
+          type: array
+        moraDurations:
+          items:
+            $ref: '#/components/schemas/MoraDuration'
+          title: Moradurations
+          type: array
+      required:
+      - f0
+      - moraDurations
+      title: WorldF0
+      type: object
+    coeirocore__meta__Style:
+      example:
+        base64Portrait: base64Portrait
+        base64Icon: base64Icon
+        styleId: 0
+        styleName: styleName
+      properties:
+        styleName:
+          title: Stylename
+          type: string
+        styleId:
+          title: Styleid
+          type: integer
+        base64Icon:
+          title: Base64Icon
+          type: string
+        base64Portrait:
+          title: Base64Portrait
+          type: string
+      required:
+      - base64Icon
+      - styleId
+      - styleName
+      title: Style
+      type: object
+    coeirocore__model__Style:
+      example:
+        name: name
+        id: 0
+      properties:
+        name:
+          title: Name
+          type: string
+        id:
+          title: Id
+          type: integer
+      required:
+      - id
+      - name
+      title: Style
+      type: object
+    coeirocore__mora__Mora:
+      example:
+        hira: hira
+        phoneme: phoneme
+        accent: 0
+      properties:
+        phoneme:
+          title: Phoneme
+          type: string
+        hira:
+          title: Hira
+          type: string
+        accent:
+          title: Accent
+          type: integer
+      required:
+      - accent
+      - hira
+      - phoneme
+      title: Mora
+      type: object
+    coeirocore__v_util__Mora:
+      example:
+        consonantLength: 0.8008281904610115
+        consonant: consonant
+        vowel: vowel
+        vowelLength: 6.027456183070403
+        text: text
+        pitch: 1.4658129805029452
+      properties:
+        text:
+          title: Text
+          type: string
+        consonant:
+          title: Consonant
+          type: string
+        consonantLength:
+          title: Consonantlength
+          type: number
+        vowel:
+          title: Vowel
+          type: string
+        vowelLength:
+          title: Vowellength
+          type: number
+        pitch:
+          title: Pitch
+          type: number
+      required:
+      - pitch
+      - text
+      - vowel
+      - vowelLength
+      title: Mora
+      type: object
+    Location_inner:
+      anyOf:
+      - type: string
+      - type: integer
+
