@@ -12,12 +12,16 @@ use tokio;
 struct Cli {
     #[command(subcommand)]
     command: Commands,
+    #[arg(long, help = "api endpoint", default_value = "http://localhost:50032")]
+    api_endpoint: String,
 }
 
 #[derive(Debug, Subcommand)]
 enum Commands {
     #[command(about = "list speakers and styles")]
     List(subcommands::list::ListCommandArgs),
+    #[command(about = "predict audio")]
+    Predict(subcommands::predict::PredictCommandArgs),
 }
 
 fn main() {
@@ -32,17 +36,21 @@ fn main() {
         None as Option<AuthData>,
         XSpanIdString::default(),
     );
+
+    let cli = Cli::parse();
     let client = Box::new(
-        coeiroink2::Client::try_new_http("http://localhost:50032")
+        coeiroink2::Client::try_new_http(&cli.api_endpoint)
             .expect("failed to create https client"),
     );
     let client: Box<dyn coeiroink2::ApiNoContext<ClientContext>> =
         Box::new(client.with_context(context));
 
-    let cli = Cli::parse();
     match cli.command {
         Commands::List(args) => {
             subcommands::list::list_command(args, &client, &runtime);
-        }
+        },
+        Commands::Predict(args) => {
+            subcommands::predict::predict_command(args, &client, &runtime);
+        },
     }
 }

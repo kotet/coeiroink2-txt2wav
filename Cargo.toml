@@ -1,5 +1,5 @@
 [package]
-name = "coeiroink2-txt2mp3"
+name = "coeiroink2-txt2wav"
 version = "0.1.0"
 edition = "2021"
 
@@ -8,6 +8,8 @@ edition = "2021"
 [dependencies]
 clap = {version = "4.5.0", features = ["derive"] }
 coeiroink2 = { path = "coeiroink2" }
+hound = "3.5.1"
+indicatif = "0.17.8"
 serde = {version = "1.0.196", features = ["derive"] }
 serde_json = "1.0.113"
 swagger = { version = "6.1", features = ["serdejson", "server", "client", "tls", "tcp"] }
