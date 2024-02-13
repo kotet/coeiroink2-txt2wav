@@ -8,10 +8,10 @@ You need to run this tool on powershell or cmd.
 Before using this tool, you need to launch the COEIROINK.
 
 ```powershell
-PS> coeiroink2-txt2wav list
+PS> coeiroink2-txt2wav.exe list
 つくよみちゃん: 3c37646f-3881-5374-2a83-149267990abc
         れいせい: 0
-PS> coeiroink2-txt2wav predict -i input.txt -o output.wav -u "3c37646f-3881-5374-2a83-149267990abc" -s 0
+PS> coeiroink2-txt2wav.exe predict -i input.txt -o output.wav -u "3c37646f-3881-5374-2a83-149267990abc" -s 0
 ```
 
 ## OpenAPI
