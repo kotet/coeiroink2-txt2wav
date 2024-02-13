@@ -59,8 +59,7 @@ pub fn predict_command(
 
     for (i, c) in text.chars().into_iter().enumerate() {
         if DELIMITERS.contains(&c) {
-            let trimmed = buf.trim_matches(DELIMITERS).trim();
-            if !trimmed.is_empty() {
+            if !buf.trim().is_empty() {
                 buf.push(c);
                 texts.push((cur, buf.clone().trim().to_string()));
                 buf.clear();
