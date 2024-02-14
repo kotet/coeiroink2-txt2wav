@@ -11,7 +11,9 @@ enum OutputFormat {
     Wav,
 }
 
-const DELIMITERS: &[char] = &['\n', '\t', '、', '。', ',', '.', '!', '?', '！', '？'];
+const DELIMITERS: &[char] = &[
+    '\n', '\t', '、', '。', ',', '.', '!', '?', '！', '？', '「', '」',
+];
 
 #[derive(Debug, Args)]
 pub struct PredictCommandArgs {
@@ -84,25 +86,30 @@ pub fn predict_command(
     let pb = indicatif::ProgressBar::new(text_length as u64);
 
     pb.set_style(
-        indicatif::ProgressStyle::with_template(
-            "[{bar:40.cyan/blue}] {pos}/{len} ({eta}) {msg}",
-        )
-        .unwrap().progress_chars("=> "),
+        indicatif::ProgressStyle::with_template("[{bar:40.cyan/blue}] {pos}/{len} ({eta}) {msg}")
+            .unwrap()
+            .progress_chars("=> "),
     );
 
     for text in &texts {
         let (cur, text) = text;
         pb.set_position(*cur as u64);
         pb.set_message(format!("predicting: {:?}", text).clone());
-        let response = runtime
-            .block_on(client.predict_v1_predict_post(WavMakingParam {
-                speaker_uuid: args.speaker_id.clone(),
-                style_id: args.style,
-                text: text.to_string(),
-                prosody_detail: None,
-                speed_scale: args.speed,
-            }))
-            .expect("failed to predict audio");
+        let response = runtime.block_on(client.predict_v1_predict_post(WavMakingParam {
+            speaker_uuid: args.speaker_id.clone(),
+            style_id: args.style,
+            text: text.to_string(),
+            prosody_detail: None,
+            speed_scale: args.speed,
+        }));
+        if let Err(err) = response {
+            pb.println(format!(
+                "failed to predict speech for {:?}: {:?}",
+                text, err
+            ));
+            continue;
+        }
+        let response = response.unwrap();
         if let coeiroink2::PredictV1PredictPostResponse::ValidationError(err) = response {
             eprintln!("validation error");
             if let Some(detail) = err.detail {
