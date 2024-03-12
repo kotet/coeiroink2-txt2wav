@@ -5,6 +5,8 @@ use clap::{Args, ValueEnum};
 use hound;
 use indicatif;
 
+use regex;
+
 #[derive(Debug, Clone, ValueEnum)]
 enum OutputFormat {
     Auto,
@@ -54,23 +56,12 @@ pub fn predict_command(
     runtime: &tokio::runtime::Runtime,
 ) {
     let text = std::fs::read_to_string(&args.input).expect("failed to read input file");
-    let text_length = text.chars().count();
-    let mut texts = vec![];
-    let mut cur = 0;
-    let mut buf = String::new();
 
-    for (i, c) in text.chars().into_iter().enumerate() {
-        if DELIMITERS.contains(&c) {
-            if !buf.trim().is_empty() {
-                buf.push(c);
-                texts.push((cur, buf.clone().trim().to_string()));
-                buf.clear();
-                cur = i + 1;
-            }
-        } else {
-            buf.push(c);
-        }
-    }
+    let text = pre_process(&text);
+
+    let text_length = text.chars().count();
+
+    let texts = split_text(&text);
 
     let mut dst = hound::WavWriter::create(
         args.output,
@@ -138,4 +129,61 @@ pub fn predict_command(
         }
     }
     pb.finish_with_message("done");
+}
+
+fn pre_process(text: &str) -> String {
+    // 10,000 -> 10000
+    let text = regex::Regex::new(r"[0-9]+,[0-9,]+").unwrap().replace_all(
+        &text,
+        |caps: &regex::Captures| {
+            let mut s = caps.get(0).unwrap().as_str().to_string();
+            s.retain(|c| c != ',');
+            println!("replacing: {:?} -> {:?}", caps.get(0).unwrap().as_str(), s);
+            s
+        },
+    );
+
+    // 1~2, 1～2 -> 1から2, 1から2
+    let text = regex::Regex::new(r"([0-9]+)[~～]([0-9]+)")
+        .unwrap()
+        .replace_all(&text, |caps: &regex::Captures| {
+            let s = format!("{}から{}", &caps[1], &caps[2]);
+            println!("replacing: {:?} -> {:?}", caps.get(0).unwrap().as_str(), s);
+            s
+        });
+
+    // ─ (罫線) -> 。
+    let text = regex::Regex::new(r"─+")
+        .unwrap()
+        .replace_all(&text, |caps: &regex::Captures| {
+            println!(
+                "replacing: {:?} -> {:?}",
+                caps.get(0).unwrap().as_str(),
+                "。"
+            );
+            "。"
+        });
+
+    text.to_string()
+}
+
+fn split_text(text: &str) -> Vec<(usize,String)> {
+    let mut texts = vec![];
+    let mut cur = 0;
+    let mut buf = String::new();
+
+    for (i, c) in text.chars().into_iter().enumerate() {
+        if DELIMITERS.contains(&c) {
+            if !buf.trim().is_empty() {
+                buf.push(c);
+                texts.push((cur, buf.clone().trim().to_string()));
+                buf.clear();
+                cur = i + 1;
+            }
+        } else {
+            buf.push(c);
+        }
+    }
+
+    texts
 }

@@ -354,6 +354,7 @@ dependencies = [
  "coeiroink2",
  "hound",
  "indicatif",
+ "regex",
  "serde",
  "serde_json",
  "swagger",
