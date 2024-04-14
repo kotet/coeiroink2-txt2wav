@@ -167,12 +167,21 @@ fn pre_process(text: &str) -> String {
     text.to_string()
 }
 
-fn split_text(text: &str) -> Vec<(usize,String)> {
+fn split_text(text: &str) -> Vec<(usize, String)> {
     let mut texts = vec![];
     let mut cur = 0;
     let mut buf = String::new();
 
     for (i, c) in text.chars().into_iter().enumerate() {
+        // do not split if the delimiter is a part of a number
+        if c == '.' {
+            let next = text.chars().nth(i + 1).unwrap_or('x');
+            let prev = text.chars().nth(i - 1).unwrap_or('x');
+            if next.is_numeric() && prev.is_numeric() {
+                buf.push(c);
+                continue;
+            }
+        }
         if DELIMITERS.contains(&c) {
             if !buf.trim().is_empty() {
                 buf.push(c);
@@ -180,9 +189,9 @@ fn split_text(text: &str) -> Vec<(usize,String)> {
                 buf.clear();
                 cur = i + 1;
             }
-        } else {
-            buf.push(c);
+            continue;
         }
+        buf.push(c);
     }
 
     texts
