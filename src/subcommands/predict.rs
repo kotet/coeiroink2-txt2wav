@@ -1,3 +1,5 @@
+use std::thread;
+
 use crate::typedef::*;
 use coeiroink2::models::WavMakingParam;
 
@@ -48,6 +50,8 @@ pub struct PredictCommandArgs {
     sample_rate: u32,
     #[arg(long, help = "bits per sample", default_value = "16")]
     bits_per_sample: u16,
+    #[arg(long, help = "retry count", default_value = "5")]
+    retry_count: u32,
 }
 
 pub fn predict_command(
@@ -86,21 +90,36 @@ pub fn predict_command(
         let (cur, text) = text;
         pb.set_position(*cur as u64);
         pb.set_message(format!("predicting: {:?}", text).clone());
-        let response = runtime.block_on(client.predict_v1_predict_post(WavMakingParam {
-            speaker_uuid: args.speaker_id.clone(),
-            style_id: args.style,
-            text: text.to_string(),
-            prosody_detail: None,
-            speed_scale: args.speed,
-        }));
-        if let Err(err) = response {
-            pb.println(format!(
-                "failed to predict speech for {:?}: {:?}",
-                text, err
-            ));
+        let mut response: Option<coeiroink2::PredictV1PredictPostResponse> = None;
+
+        for _ in 0..args.retry_count {
+            let r = runtime.block_on(client.predict_v1_predict_post(WavMakingParam {
+                speaker_uuid: args.speaker_id.clone(),
+                style_id: args.style,
+                text: text.to_string(),
+                prosody_detail: None,
+                speed_scale: args.speed,
+            }));
+
+            if let Err(err) = r {
+                pb.println(format!(
+                    "failed to predict speech for {:?}, retrying: {:?}",
+                    text, err
+                ));
+                response = None;
+                thread::sleep(std::time::Duration::from_secs(1));
+            } else {
+                response = Some(r.unwrap());
+                break;
+            }
+        }
+
+        if response.is_none() {
+            eprintln!("failed to predict speech for {:?}", text);
             continue;
         }
         let response = response.unwrap();
+
         if let coeiroink2::PredictV1PredictPostResponse::ValidationError(err) = response {
             eprintln!("validation error");
             if let Some(detail) = err.detail {
@@ -125,7 +144,7 @@ pub fn predict_command(
                     .expect("failed to write sample");
             }
         } else {
-            eprintln!("unknown response");
+            eprintln!("unknown error");
         }
     }
     pb.finish_with_message("done");
